@@ -195,7 +195,7 @@ total_utaut = utaut_df.sum(axis=1)
 df['Total UTAUT Score']= total_utaut
 ````
 A separate dataframe was then created with all of the scores from all of the questionnaires and the demographic information needed for ease of use:
-`````
+````
 scores_df = df[['Q4','Q5','PHQ9 Score', 'Total MSPSS Score', 'Total UTAUT Score', 'Task Oriented Score','Emotion Oriented Score', 'Avoidance Oriented Score', 'Overall Coping Style', 'Total Family MSPSS Score' ]]
 ````
 # Part III: Exploratory Data Analysis
@@ -209,6 +209,8 @@ corr, pval = pearsonr(phq9, utaut)
 
 print(f"Correlation: {corr:.3f}, p-value: {pval:.3f}")
 ````
+Correlation: -0.188, p-value: 0.319
+
 Then it was visualized and separated for African Americans and black immigrants to see if there are any significant differences between those two populations.
 ````
 sns.set(style="whitegrid")
@@ -239,6 +241,63 @@ plt.ylabel('PHQ-9 Score')
 plt.tight_layout()
 plt.show()
 ````
-````
+
 ![image](https://github.com/user-attachments/assets/a523d7fa-c0a0-4b2b-b8d5-291ebb58b3ab)
+## Student's T-Test
+The next model that was run was a student's t-test to analyze if the MSPSS scores between African-Americans and Black Immigrants had a significant difference
 ````
+african_americans = scores_df[scores_df['African-American or Immigrant'] == 1]['Total MSPSS Score']
+immigrants = scores_df[scores_df['African-American or Immigrant'] == 0]['Total MSPSS Score']
+
+t_statistic, p_value = ttest_ind(african_americans, immigrants)
+````
+Our T-statistic was 1.1297030828596402, our P-value was 0.26818671513459885. Therefore there is no statistically significant difference in MSPSS Score between African-Americans and Immigrants.
+
+This data was visualized in a barplot with error bars.
+````
+groups = ['African-Americans', 'Immigrants']
+means = [np.mean(african_americans), np.mean(immigrants)] 
+errors = [np.std(african_americans), np.std(immigrants)]
+
+plt.figure(figsize=(8, 6))
+plt.bar(groups, means, yerr=errors, capsize=5, color=['skyblue', 'lightcoral']) 
+plt.xlabel('Ethnicity')
+plt.ylabel('Mean MSPSS Score')
+plt.title(f'Mean MSPSS Score by Ethnicity (t = {t_statistic:.2f}, p = {p_value:.3f})')
+
+plt.tight_layout()
+plt.show()
+````
+![image](https://github.com/user-attachments/assets/c74cf1e2-3204-44ba-8b0e-e1f7c8f5f274)
+## Chi-Squared Test
+Then a chi-squared test was run on the CISS data of the different coping styles to see if African-Americans and Immirgants had significantly different dominant coping styles. To do this, the tables containing the overall coping style for each participant had to be manipulated
+````
+style_expanded = scores_df.explode('Overall Coping Style')
+
+# Map readable labels for group
+style_expanded['Group'] = scores_df['African-American or Immigrant'].map({
+    1: 'African-American',
+    0: 'Immigrant'
+})
+
+coping_counts = style_expanded.groupby(['Overall Coping Style', 'Group']).size().reset_index(name='Count')
+````
+Then it was visualized with a barplot.
+````
+plt.figure(figsize=(10, 6))
+sns.barplot(
+    data=coping_counts,
+    x='Overall Coping Style',
+    y='Count',
+    hue='Group',
+    palette='Set2'
+)
+
+plt.title('Coping Style Preference by Group')
+plt.xlabel('Overall Coping Style')
+plt.ylabel('Number of Participants')
+plt.xticks(rotation=20)
+plt.tight_layout()
+plt.show()
+````
+![image](https://github.com/user-attachments/assets/01113ec5-a305-4261-830d-fcb3ba942221)
