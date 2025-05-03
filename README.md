@@ -270,7 +270,7 @@ plt.show()
 ````
 ![image](https://github.com/user-attachments/assets/c74cf1e2-3204-44ba-8b0e-e1f7c8f5f274)
 ## Chi-Squared Test
-Then a chi-squared test was run on the CISS data of the different coping styles to see if African-Americans and Immirgants had significantly different dominant coping styles. To do this, the tables containing the overall coping style for each participant had to be manipulated
+Then a chi-squared test was run on the CISS data of the different coping styles to see if African-Americans and Immirgants had significantly different dominant coping styles. To do this, the tables containing the overall coping style for each participant had to be manipulated. Then na contingency table was made and the statistical significance was analyzed.
 ````
 style_expanded = scores_df.explode('Overall Coping Style')
 
@@ -278,10 +278,25 @@ style_expanded = scores_df.explode('Overall Coping Style')
 style_expanded['Group'] = scores_df['African-American or Immigrant'].map({
     1: 'African-American',
     0: 'Immigrant'
-})
-
+}
 coping_counts = style_expanded.groupby(['Overall Coping Style', 'Group']).size().reset_index(name='Count')
+
+contingency_table = pd.crosstab(
+    style_expanded['Group'],
+    style_expanded['Overall Coping Style']
+)
+
+from scipy.stats import chi2_contingency
+
+chi2, p, dof, expected = chi2_contingency(contingency_table))
 ````
+Chi-square test statistic: 1.7062499999999994
+p-value: 0.42608134510111195
+Degrees of freedom: 2
+Expected frequencies:
+ [[7.38461538 8.         8.61538462]
+ [4.61538462 5.         5.38461538]]
+This indicates that there was no significant difference between the coping styles of the two groups. 
 Then it was visualized with a barplot.
 ````
 plt.figure(figsize=(10, 6))
@@ -301,3 +316,11 @@ plt.tight_layout()
 plt.show()
 ````
 ![image](https://github.com/user-attachments/assets/01113ec5-a305-4261-830d-fcb3ba942221)
+
+# Part 4: Conclusion
+We hypothesized that African-Americans will show greater usage of technology to aid mental health and therefore better mental wellbeing. This is not supported - there is no significant difference. However the trend of the data shows that African-Americans did tend to use technology more for mental health and there was a slight negative correlation between technology usage for mental health services and mental health deterioration.
+
+We hypothesized that  African-Americans will have higher social support and that will correlate with better mental well-being. This is not supported. There were no significant differences and no differences in trends.
+
+We hypothesized that first and second generation immigrants will tend less towards emotional type coping when dealing with stress due to cultural values. This was not supported. There was no significant difference in coping strategies. Immigrants did have less avoidant and emotional coping strategies however
+
