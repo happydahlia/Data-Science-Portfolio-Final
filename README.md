@@ -1,3 +1,4 @@
+
 # Data-Science-Portfolio-Final
 Background
 This data analysis project is for my Data Science Senior Portfolio. This is the analysis of the data colllected from an IRB approved study with the Department of Psychological Sciences at Belmont University. In this study, data was collected on students of African descent around the country and their mental health status, percieved social support, and technology usage for mental health services. The students werre also asked to identify what cultures they identified with the most and their responses for each of the categories were compared for black immigrants and African-Americans.
@@ -238,5 +239,6 @@ plt.ylabel('PHQ-9 Score')
 plt.tight_layout()
 plt.show()
 ````
+````
 ![image](https://github.com/user-attachments/assets/a523d7fa-c0a0-4b2b-b8d5-291ebb58b3ab)
-
+````
