@@ -10,7 +10,7 @@ This data analysis project is for my Data Science Senior Portfolio. This is the 
 # Part I: Collecting and Cleaning Data
 Data was collected from the online survey platform Qualtrics. The survey consisted of demographic questions, and four scientifically verified psychological questionnaires: Patient Health Questionnaire (PHQ-9), Multidimensional Scale of Perceived Social Support (MSPSS), Coping Inventory for Stressful Situations (CISS-21), and Unified Theory of Acceptance and Use of Technology (UTAUT-2). The data was collected by sending the survey to black oriented organizations across different university campuses such as the Black Student Association and the African Student Organization at Belmont University. Thirty participants had taken the survey at the time of analysis. The data was downloaded as a CSV file. The data was cleaned to only keep the columns that contained the demographic question answers and the survey question answers. NA responses for any question were also dropped. 
 
-# Part II: Exploratory Data Analysis
+# Part II: Questionnaire Scoring
 Data analysis was conducted in Python using Google Colab.
 
 Importing Packages and Loading Data
@@ -141,7 +141,7 @@ for i in range(len(df)):
 df["Overall Coping Style"] = overall_style
 ````
 ## Scoring the MSPSS
-The MSPSS is a questionnaire that asks participants to rate the accuracy of statements to them on a seven point Likert scale. 
+The MSPSS is a questionnaire about social support that asks participants to rate the accuracy of statements to them on a seven point Likert scale. Agreeing with the statements indicates that they percieve themself to have high social support in that area.
 
 A separate dataframe was created for the MSPSS questions and the responses to each statement were mapped to a Likert scale:
 ````
@@ -162,3 +162,81 @@ mspss_mapping = {
 }
 mspss_df = mspss_df.replace(mspss_mapping)
 ````
+The total MSPSS score was calulated by adding up all the question response scores and theses scores were added to the main dataframe:
+````
+total_mspss = mspss_df.sum(axis=1)
+df['Total MSPSS Score']= total_mspss
+````
+## Scoring the UTAUT-2
+The UTAUT is a questionnaire that asks participants to rate statements about their use of technology for a specific goal on a five point Likert scale. For this study, we modified the UTAUT to ask about mental health technology specifically. Agreeing with the statements indicates that the participant utilizes technology for that specific goal.
+
+A separate dataframe was created for the UTAUT questions and the responses to each statement were mapped to a Likert scale:
+````
+utaut_columns = []
+for i in range(len(columns)):
+  if columns[i].find("Q14") >= 0 :
+    utaut_columns.append(columns[i])
+utaut_df = df[utaut_columns]
+
+utaut_mapping = {
+    "Strongly Disagree" : 1,
+    "Disagree" : 2,
+    "Neither agree or disagree" : 3,
+    "Agree": 4,
+    "Strongly Agree" : 5,
+
+}
+utaut_df = utaut_df.replace(utaut_mapping)
+````
+The total UTAUT score was calulated by adding up all the question response scores and theses scores were added to the main dataframe:
+````
+total_utaut = utaut_df.sum(axis=1)
+df['Total UTAUT Score']= total_utaut
+````
+A separate dataframe was then created with all of the scores from all of the questionnaires and the demographic information needed for ease of use:
+`````
+scores_df = df[['Q4','Q5','PHQ9 Score', 'Total MSPSS Score', 'Total UTAUT Score', 'Task Oriented Score','Emotion Oriented Score', 'Avoidance Oriented Score', 'Overall Coping Style', 'Total Family MSPSS Score' ]]
+````
+# Part III: Exploratory Data Analysis
+## Linear Regression
+A linear regression was conducted between Total MSPSS Score and Total UTAUT score to analyze the relationship between these two values.
+````
+phq9 = scores_df['Total MSPSS Score']
+utaut = scores_df['Total UTAUT Score']
+
+corr, pval = pearsonr(phq9, utaut)
+
+print(f"Correlation: {corr:.3f}, p-value: {pval:.3f}")
+````
+Then it was visualized and separated for African Americans and black immigrants to see if there are any significant differences between those two populations.
+````
+sns.set(style="whitegrid")
+scores_df['Group'] = scores_df['African-American or Immigrant'].map({
+    1: 'African-American',
+    0: 'Immigrants'
+})
+
+filtered_df = scores_df[scores_df['Total UTAUT Score'] != 0]
+
+sns.lmplot(
+    data=filtered_df,
+    x='Total UTAUT Score',
+    y='PHQ9 Score',
+    hue='Group',
+    height=6,
+    aspect=1.5,
+    markers=['o', 's'],
+    palette='Set1',
+    ci=95
+)
+
+plt.xlim(0, 100)  
+plt.ylim(0, None)  
+plt.title('Relationship between PHQ-9 Score and UTAUT Score\nby Ethnicity')
+plt.xlabel('Total UTAUT Score')
+plt.ylabel('PHQ-9 Score')
+plt.tight_layout()
+plt.show()
+````
+![image](https://github.com/user-attachments/assets/a523d7fa-c0a0-4b2b-b8d5-291ebb58b3ab)
+
